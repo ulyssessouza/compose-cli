@@ -56,7 +56,7 @@ func init() {
 type E2eCLI struct {
 	BinDir    string
 	ConfigDir string
-	test      *testing.T
+	Test      *testing.T
 }
 
 // NewParallelE2eCLI returns a configured TestE2eCLI with t.Parallel() set
@@ -142,7 +142,7 @@ func CopyFile(sourceFile string, destinationFile string) error {
 	return nil
 }
 
-// NewCmd creates a cmd object configured with the test environment set
+// NewCmd creates a cmd object configured with the Test environment set
 func (c *E2eCLI) NewCmd(command string, args ...string) icmd.Cmd {
 	env := append(os.Environ(),
 		"DOCKER_CONFIG="+c.ConfigDir,
@@ -162,18 +162,18 @@ func (c *E2eCLI) NewDockerCmd(args ...string) icmd.Cmd {
 
 // RunDockerOrExitError runs a docker command and returns a result
 func (c *E2eCLI) RunDockerOrExitError(args ...string) *icmd.Result {
-	fmt.Printf("	[%s] docker %s\n", c.test.Name(), strings.Join(args, " "))
+	fmt.Printf("	[%s] docker %s\n", c.Test.Name(), strings.Join(args, " "))
 	return icmd.RunCmd(c.NewDockerCmd(args...))
 }
 
 // RunDockerCmd runs a docker command, expects no error and returns a result
 func (c *E2eCLI) RunDockerCmd(args ...string) *icmd.Result {
 	res := c.RunDockerOrExitError(args...)
-	res.Assert(c.test, icmd.Success)
+	res.Assert(c.Test, icmd.Success)
 	return res
 }
 
-// PathEnvVar returns path (os sensitive) for running test
+// PathEnvVar returns path (os sensitive) for running Test
 func (c *E2eCLI) PathEnvVar() string {
 	path := c.BinDir + ":" + os.Getenv("PATH")
 	if runtime.GOOS == "windows" {
