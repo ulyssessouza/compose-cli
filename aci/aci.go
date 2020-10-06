@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	tm "github.com/buger/goterm"
@@ -93,7 +93,7 @@ func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContex
 		StatusText: "Created",
 	})
 	for _, c := range *groupDefinition.Containers {
-		if c.Name != nil && *c.Name != convert.ComposeDNSSidecarName {
+		if c.Name != nil {
 			w.Event(progress.Event{
 				ID:         *c.Name,
 				Status:     progress.Working,
@@ -108,7 +108,7 @@ func createOrUpdateACIContainers(ctx context.Context, aciContext store.AciContex
 	}
 
 	for _, c := range *groupDefinition.Containers {
-		if c.Name != nil && *c.Name != convert.ComposeDNSSidecarName {
+		if c.Name != nil {
 			w.Event(progress.Event{
 				ID:         *c.Name,
 				Status:     progress.Done,
@@ -163,7 +163,11 @@ func deleteACIContainerGroup(ctx context.Context, aciContext store.AciContext, c
 		return containerinstance.ContainerGroup{}, fmt.Errorf("cannot get container group client: %v", err)
 	}
 
-	return containerGroupsClient.Delete(ctx, aciContext.ResourceGroup, containerGroupName)
+	containerGroupDeleteFuture, err := containerGroupsClient.Delete(ctx, aciContext.ResourceGroup, containerGroupName)
+	if err != nil {
+		return containerinstance.ContainerGroup{}, fmt.Errorf("cannot delete container group %q: %v", containerGroupName, err)
+	}
+	return containerGroupDeleteFuture.Result(containerGroupsClient)
 }
 
 func stopACIContainerGroup(ctx context.Context, aciContext store.AciContext, containerGroupName string) error {
@@ -180,7 +184,7 @@ func stopACIContainerGroup(ctx context.Context, aciContext store.AciContext, con
 }
 
 func execACIContainer(ctx context.Context, aciContext store.AciContext, command, containerGroup string, containerName string) (c containerinstance.ContainerExecResponse, err error) {
-	containerClient, err := login.NewContainerClient(aciContext.SubscriptionID)
+	containerClient, err := login.NewContainersClient(aciContext.SubscriptionID)
 	if err != nil {
 		return c, errors.Wrapf(err, "cannot get container client")
 	}
@@ -273,7 +277,7 @@ func exec(ctx context.Context, address string, password string, request containe
 }
 
 func getACIContainerLogs(ctx context.Context, aciContext store.AciContext, containerGroupName, containerName string, tail *int32) (string, error) {
-	containerClient, err := login.NewContainerClient(aciContext.SubscriptionID)
+	containerClient, err := login.NewContainersClient(aciContext.SubscriptionID)
 	if err != nil {
 		return "", errors.Wrapf(err, "cannot get container client")
 	}

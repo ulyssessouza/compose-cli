@@ -10,7 +10,7 @@ replace github.com/awslabs/goformation/v4 => github.com/ndeloof/goformation/v4 v
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.1.1
-	github.com/Azure/azure-sdk-for-go v43.3.0+incompatible
+	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-file-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.11.4
 	github.com/Azure/go-autorest/autorest/adal v0.9.2

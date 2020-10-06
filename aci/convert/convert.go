@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/compose-spec/compose-go/types"
 	"github.com/pkg/errors"
@@ -41,8 +41,8 @@ import (
 const (
 	// StatusRunning name of the ACI running status
 	StatusRunning = "Running"
-	// ComposeDNSSidecarName name of the dns sidecar container
-	ComposeDNSSidecarName = "aci--dns--sidecar"
+	// ComposeInitContainerName name of the setup init container
+	ComposeInitContainerName = "aci--init--container"
 
 	dnsSidecarImage                = "busybox:1.31.1"
 	azureFileDriverName            = "azure_file"
@@ -127,9 +127,11 @@ func ToContainerGroup(ctx context.Context, aciContext store.AciContext, p types.
 		}
 	}
 	if len(containers) > 1 {
-		dnsSideCar := getDNSSidecar(containers)
-		containers = append(containers, dnsSideCar)
+		groupDefinition.ContainerGroupProperties.InitContainers = &[]containerinstance.InitContainerDefinition{
+			getInitContainer(containers),
+		}
 	}
+
 	groupDefinition.ContainerGroupProperties.Containers = &containers
 
 	return groupDefinition, nil
@@ -160,33 +162,20 @@ func convertPortsToAci(service serviceConfigAciHelper) ([]containerinstance.Cont
 	return containerPorts, groupPorts, dnsLabelName, nil
 }
 
-func getDNSSidecar(containers []containerinstance.Container) containerinstance.Container {
+func getInitContainer(containers []containerinstance.Container) containerinstance.InitContainerDefinition {
 	var commands []string
-	for _, container := range containers {
-		commands = append(commands, fmt.Sprintf("echo 127.0.0.1 %s >> /etc/hosts", *container.Name))
+	for _, c := range containers {
+		commands = append(commands, fmt.Sprintf("echo 127.0.0.1 %s >> /etc/hosts", *c.Name))
 	}
-	// ACI restart policy is currently at container group level, cannot let the sidecar terminate quietly once /etc/hosts has been edited
-	// Pricing is done at the container group level so letting the sidecar container "sleep" should not impact the price for the whole group
-	commands = append(commands, "sleep infinity")
+	commands = append(commands, "cat /etc/hosts")
 	alpineCmd := []string{"sh", "-c", strings.Join(commands, ";")}
-	dnsSideCar := containerinstance.Container{
-		Name: to.StringPtr(ComposeDNSSidecarName),
-		ContainerProperties: &containerinstance.ContainerProperties{
+	return containerinstance.InitContainerDefinition{
+		Name: to.StringPtr(ComposeInitContainerName),
+		InitContainerPropertiesDefinition: &containerinstance.InitContainerPropertiesDefinition{
 			Image:   to.StringPtr(dnsSidecarImage),
 			Command: &alpineCmd,
-			Resources: &containerinstance.ResourceRequirements{
-				Limits: &containerinstance.ResourceLimits{
-					MemoryInGB: to.Float64Ptr(0.1),  // "The memory requirement should be in incrememts of 0.1 GB."
-					CPU:        to.Float64Ptr(0.01), //  "The CPU requirement should be in incrememts of 0.01."
-				},
-				Requests: &containerinstance.ResourceRequests{
-					MemoryInGB: to.Float64Ptr(0.1),
-					CPU:        to.Float64Ptr(0.01),
-				},
-			},
 		},
 	}
-	return dnsSideCar
 }
 
 type projectAciHelper types.Project

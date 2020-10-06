@@ -21,7 +21,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/resources/mgmt/resources"
 	"github.com/Azure/azure-sdk-for-go/profiles/preview/preview/subscription/mgmt/subscription"
-	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-06-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/pkg/errors"
@@ -100,12 +100,12 @@ func NewGroupsClient(subscriptionID string) (resources.GroupsClient, error) {
 	return groupsClient, nil
 }
 
-// NewContainerClient get client to manipulate containers
-func NewContainerClient(subscriptionID string) (containerinstance.ContainerClient, error) {
-	containerClient := containerinstance.NewContainerClient(subscriptionID)
+// NewContainersClient get client to manipulate containers
+func NewContainersClient(subscriptionID string) (containerinstance.ContainersClient, error) {
+	containerClient := containerinstance.NewContainersClient(subscriptionID)
 	err := setupClient(&containerClient.Client)
 	if err != nil {
-		return containerinstance.ContainerClient{}, err
+		return containerinstance.ContainersClient{}, err
 	}
 	return containerClient, nil
 }

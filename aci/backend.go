@@ -20,7 +20,7 @@ import (
 	"context"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/pkg/errors"
 
@@ -130,7 +130,7 @@ func getContainerID(group containerinstance.ContainerGroup, container containeri
 }
 
 func isContainerVisible(container containerinstance.Container, group containerinstance.ContainerGroup, showAll bool) bool {
-	return *container.Name == convert.ComposeDNSSidecarName || (!showAll && convert.GetStatus(container, group) != convert.StatusRunning)
+	return !showAll && convert.GetStatus(container, group) != convert.StatusRunning
 }
 
 func addTag(groupDefinition *containerinstance.ContainerGroup, tagName string) {

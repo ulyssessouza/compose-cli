@@ -19,7 +19,7 @@ package convert
 import (
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2018-10-01/containerinstance"
+	"github.com/Azure/azure-sdk-for-go/services/containerinstance/mgmt/2019-12-01/containerinstance"
 
 	"github.com/docker/compose-cli/api/containers"
 )
