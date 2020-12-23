@@ -60,7 +60,7 @@ func (s *composeService) ensureService(ctx context.Context, project *types.Proje
 		missing := scale - len(actual)
 		for i := 0; i < missing; i++ {
 			number := next + i
-			name := fmt.Sprintf("%s_%s_%d", project.Name, service.Name, number)
+			name := getLogPrefix(project.Name, service, number)
 			eg.Go(func() error {
 				return s.createContainer(ctx, project, service, name, number, false)
 			})
@@ -112,6 +112,14 @@ func (s *composeService) ensureService(ctx context.Context, project *types.Proje
 		}
 	}
 	return eg.Wait()
+}
+
+func getLogPrefix(projectName string, service types.ServiceConfig, number int) string {
+	name := fmt.Sprintf("%s_%s_%d", projectName, service.Name, number)
+	if service.ContainerName != "" {
+		name = service.ContainerName
+	}
+	return name
 }
 
 func (s *composeService) waitDependencies(ctx context.Context, project *types.Project, service types.ServiceConfig) error {
