@@ -49,6 +49,7 @@ import (
 
 	// Backend registrations
 	_ "github.com/docker/compose-cli/aci"
+	_ "github.com/docker/compose-cli/containerd"
 	_ "github.com/docker/compose-cli/ecs"
 	_ "github.com/docker/compose-cli/ecs/local"
 	_ "github.com/docker/compose-cli/local"
@@ -165,7 +166,7 @@ func main() {
 	})
 
 	// populate the opts with the global flags
-	flags.Parse(os.Args[1:]) //nolint: errcheck
+	flags.Parse(os.Args[1:]) // nolint: errcheck
 
 	level, err := logrus.ParseLevel(opts.LogLevel)
 	if err != nil {

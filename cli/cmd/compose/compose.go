@@ -124,7 +124,12 @@ func Command(contextType string) *cobra.Command {
 		unpauseCommand(&opts),
 	)
 
-	if contextType == store.LocalContextType || contextType == store.DefaultContextType {
+	switch contextType {
+	case store.ContainerdContextType:
+		fallthrough
+	case store.LocalContextType:
+		fallthrough
+	case store.DefaultContextType:
 		command.AddCommand(
 			buildCommand(&opts),
 			pushCommand(&opts),

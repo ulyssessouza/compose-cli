@@ -58,6 +58,9 @@ const (
 	// KubeContextType is the endpoint key in the context endpoints for a new
 	// kube backend
 	KubeContextType = "kube"
+	// ContainerdContextType is the endpoint key in the context endpoints for a new
+	// containerd backend
+	ContainerdContextType = "containerd"
 )
 
 const (
@@ -333,6 +336,9 @@ func getters() map[string]func() interface{} {
 		},
 		KubeContextType: func() interface{} {
 			return &KubeContext{}
+		},
+		ContainerdContextType: func() interface{} {
+			return &ContainerdContext{}
 		},
 	}
 }

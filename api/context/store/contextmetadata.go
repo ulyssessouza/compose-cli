@@ -62,6 +62,11 @@ type KubeContext struct {
 	FromEnvironment bool
 }
 
+// ContainerdContext is the context for a containerd backend
+type ContainerdContext struct {
+	Namespace string `json:",omitempty"`
+}
+
 // AwsContext is the context for the ecs plugin
 type AwsContext EcsContext
 
